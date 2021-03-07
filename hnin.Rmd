@@ -1,0 +1,134 @@
+```{r}
+link="https://github.com/Vis-Analytics-FinalProj/RawData/raw/main/Seattle_Pet_Licenses%20CLEANED.xlsx"
+
+library(rio)
+mydata=import(link)
+```
+
+```{r}
+str(mydata,width = 150,strict.width='cut')
+```
+
+```{r}
+library(lubridate)
+mydata$LicenseIssueDate <- mdy(mydata$`License Issue Date`)
+```
+
+NEW! - create data frame
+
+```{r}
+# key change
+mydata$LicenseIssueDate=floor_date(mydata$LicenseIssueDate,"month")
+
+```
+
+```{r}
+head(mydata)
+```
+
+```{r}
+DFissue=as.data.frame(table(mydata$LicenseIssueDate), stringsAsFactors =FALSE)
+names(DFissue)=c("date","Count")
+#key change!
+DFissue$date=as.Date(DFissue$date)
+```
+
+```{r}
+head(DFissue)
+```
+
+NEW!- plot
+
+```{r}
+library(ggplot2)
+base1=ggplot(data=DFissue, aes(x=date,y=Count))
+bar1=base1+geom_bar(stat = 'identity')
+bar1
+
+```
+
+
+
+```{r}
+library(ggplot2)
+DFissue_sub=DFissue[DFissue$date>=as.Date('2019-02-01'),]
+base1=ggplot(data=DFissue_sub, aes(x=date,y=Count))
+bar1=base1+geom_bar(stat = 'identity')
+bar1
+
+```
+
+```{r}
+
+library(scales)
+
+bar2=bar1 + scale_x_date(breaks = date_breaks("months"),
+  labels = date_format("%b-%y"))  
+
+
+bar3=bar2 + theme(axis.text.x = element_text(angle = 90)) 
+
+
+bar3
+
+```
+
+
+```{r}
+bar4=bar3 + geom_text(aes(label=Count),
+                      angle=90 ,
+                      size=4,
+                      hjust = 1,
+                      color='white') + geom_vline(xintercept=as.Date('2020-03-23'), col="red") + geom_text(aes(x=as.Date('2020-03-23'), label="Lockdown 3/23/'20", y=2700), color="red", angle=0, size=3) +
+  stat_smooth(color = "red",
+                      fill = "yellow",
+                      method = "loess")
+                
+bar4
+```
+
+```{r}
+head(mydata$`License Issue Date`,20)
+```
+
+```{r}
+dfwaffle=as.data.frame(table(mydata$LicenseIssueDate, mydata$Species), stringsAsFactors =FALSE)
+names(dfwaffle)=c("date","species","Count")
+#key change!
+#dfwaffle$date=as.Date(dfwaffle$date)
+dfwaffle$date = format(as.Date(dfwaffle$date, format="%Y-%m-%d"),"%Y")
+```
+
+```{r}
+head(dfwaffle,50)
+```
+
+```{r}
+library(dplyr)
+library(waffle)
+
+dfwaffle %>% 
+  filter(date >= 2018) %>% 
+  count(date, species, Count) -> dfwaffle_date
+  
+ggplot(dfwaffle_date, aes(fill = species, values = Count/100)) +
+  geom_waffle(color = "white", size = 0.25, n_rows = 10, flip = TRUE) +
+  facet_wrap(~date, nrow = 1, strip.position = "bottom") +
+  scale_x_discrete() + 
+  scale_y_continuous(labels = function(x) x * 10, # make this multiplyer the same as n_rows
+                     expand = c(0,0))+
+  ggthemes::scale_fill_tableau(name=NULL) +
+  coord_equal() +
+  labs(
+    title = "Faceted Waffle Bar Chart",
+    subtitle = "Pet Waffles",
+    x = "Year",
+    y = "Count"
+  ) +
+  theme_minimal(base_family = "Roboto Condensed") +
+  theme(panel.grid = element_blank(), axis.ticks.y = element_line()) +
+  guides(fill = guide_legend(reverse = TRUE))
+
+```
+
+
