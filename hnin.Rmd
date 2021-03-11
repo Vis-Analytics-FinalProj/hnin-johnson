@@ -77,12 +77,29 @@ bar4=bar3 + geom_text(aes(label=Count),
                       angle=90 ,
                       size=4,
                       hjust = 1,
-                      color='white') + geom_vline(xintercept=as.Date('2020-03-23'), col="red") + geom_text(aes(x=as.Date('2020-03-23'), label="Lockdown 3/23/'20", y=2700), color="red", angle=0, size=3) +
+                      color='white') + geom_vline(xintercept=as.Date('2020-03-23'), col="red") + geom_text(aes(x=as.Date('2020-03-23'), label="Lockdown 3/23/'20", y=2800), color="red", angle=0, size=3) +
   stat_smooth(color = "red",
                       fill = "yellow",
                       method = "loess") 
                 
 bar4
+```
+
+```{r}
+Titles=list(Title="All Pet Licenses Purchased in recent years",
+            SubTi="2019 January to 2021 January",
+            XTi="Month and Year",
+            YTi="Count of Pet Licenses",
+            Sou="Source: King County")
+
+## placing the titles on the graph
+plot5= bar4 + labs(title = Titles$Title,
+                    subtitle = Titles$SubTi,
+                    x=Titles$XTi,
+                    y=Titles$YTi,
+                    caption = Titles$Sou)
+plot5
+
 ```
 
 #Hnin's Bivariate Plot
@@ -144,9 +161,11 @@ petWorld=read_sf(linkMap)
 head(petWorld)
 ```
 
+
 ```{r}
-head(mydata,6)
+head(mydata,3)
 ```
+
 
 ```{r}
 petWorldVars=merge(petWorld, #map first
@@ -155,19 +174,93 @@ petWorldVars=merge(petWorld, #map first
 ```
 
 ```{r}
+head(petWorldVars,10)
+```
+
+```{r}
+summary(petWorldVars$ZIPCODE)
+```
+
+
+
+Prepare data frame
+```{r}
+a = table(petWorldVars$ZIPCODE)
+b = as.data.frame(a)
+names(b)[1] = 'Zip'
+b
+```
+
+ 
+```{r}
+#Order data by Freq
+c = b[order(-b[[2]]),]
+c
+```
+
+```{r}
+#Top 25 zipcodes for adoption.
+ToBar=c[order(-c$Freq)[1:52],]
+ToBar
+```
+
+```{r}
+petWorldVars1=merge(petWorldVars, #map first
+                   ToBar, 
+                   by.x='ZIPCODE', by.y='Zip')
+```
+
+```{r}
+head(petWorldVars1,10)
+```
+
+```{r}
 library(ggplot2)
 # plot original map
-base=ggplot(data=petWorld) + geom_sf(fill='grey90',
+base=ggplot(data=petWorldVars) + geom_sf(fill='grey90',
                                      color=NA) + theme_classic()
-
 base #base map
 ```
 
 ```{r}
-colMap= base + geom_sf(data=petWorldVars,
-                       aes(fill=Species),
-                       color=NA)
+colMap = base + geom_sf(data=petWorldVars1, aes(fill=-Freq),
+                       color=NA) + theme_classic()
 colMap
 ```
 
+```{r}
+SeaMap = colMap + scale_fill_gradient(low = 'red',
+                             high= 'blue')
+
+SeaMap
+```
+
+## Adding title names
+```{r}
+Titles=list(Title="All Pet Licenses Purchased in King County by ZIP Code",
+            SubTi="2015-2019",
+            Sou="Source: King County")
+```
+
+```{r}
+plot2= SeaMap + labs(title = Titles$Title,
+                    subtitle = Titles$SubTi,
+                    caption = Titles$Sou)
+
+plot3 = plot2 + theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+
+
+bartext=plot3 + labs(fill = "Count")
+
+MapChart = bartext + theme(
+  plot.title = element_text(hjust = 0.5),
+  plot.subtitle = element_text(hjust = 0.5)
+)
+MapChart
+```
 
