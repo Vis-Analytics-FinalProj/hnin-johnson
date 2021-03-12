@@ -1,3 +1,4 @@
+Loading the raw data
 ```{r}
 link="https://github.com/Vis-Analytics-FinalProj/RawData/raw/main/Seattle_Pet_Licenses%20CLEANED.xlsx"
 
@@ -8,7 +9,7 @@ mydata=import(link)
 ```{r}
 str(mydata,width = 150,strict.width='cut')
 ```
-#Hnin's Univariate Plot
+Hnin's Univariate Plot Begins here
 ```{r}
 library(lubridate)
 mydata$LicenseIssueDate <- mdy(mydata$`License Issue Date`)
@@ -101,8 +102,10 @@ plot5= bar4 + labs(title = Titles$Title,
 plot5
 
 ```
+Hnin's Univariate Plot Begins here
 
-#Hnin's Bivariate Plot
+
+Hnin's Bivariate Plot Begins here
 ```{r}
 head(mydata$`License Issue Date`,20)
 ```
@@ -146,10 +149,13 @@ ggplot(dfwaffle_date, aes(fill = species, values = Count/100)) +
   guides(fill = guide_legend(reverse = TRUE))
 
 ```
+Hnin's Bivariate Plot Ends here
 
-#Hnin's Map Plot
+
+Hnin's Map Plot Begins here
+
 ```{r}
-linkMap="https://github.com/Vis-Analytics-FinalProj/SeattleZIP/raw/main/King%20County%20ZIP%20Codes.json" # link desde github
+linkMap="https://github.com/Vis-Analytics-FinalProj/Rebecca-Taylor/raw/main/Zipcodes_for_King_County_and_Surrounding_Area___zipcode_area%20(1).json"
 library(sf)
 ```
 
@@ -199,7 +205,7 @@ c
 ```
 
 ```{r}
-#Top 25 zipcodes for adoption.
+#Top zipcodes for adoption.
 ToBar=c[order(-c$Freq)[1:52],]
 ToBar
 ```
@@ -217,14 +223,16 @@ head(petWorldVars1,10)
 ```{r}
 library(ggplot2)
 # plot original map
-base=ggplot(data=petWorldVars) + geom_sf(fill='grey90',
-                                     color=NA) + theme_classic()
+base=ggplot(data=petWorldVars) + geom_sf(fill='grey90', color='grey40', lwd=0.5) + theme_classic()
 base #base map
 ```
 
 ```{r}
 colMap = base + geom_sf(data=petWorldVars1, aes(fill=-Freq),
-                       color=NA) + theme_classic()
+                      color="grey40",
+                       lwd=0.25)+
+  scale_fill_viridis_c(option = "magma",begin = 0.1)
+
 colMap
 ```
 
@@ -235,15 +243,17 @@ SeaMap = colMap + scale_fill_gradient(low = 'red',
 SeaMap
 ```
 
-## Adding title names
 ```{r}
-Titles=list(Title="All Pet Licenses Purchased in King County by ZIP Code",
-            SubTi="2015-2019",
-            Sou="Source: King County")
-```
+ZipMap = SeaMap + geom_point(aes(x=-122.29180, y=47.68676), size=2, color="white") +
+  geom_text(x=-122.13, y=47.7, label="98115", size=4, color="white")
 
-```{r}
-plot2= SeaMap + labs(title = Titles$Title,
+
+Titles=list(Title="All Pet Licenses Purchased in King County by ZIP Code",
+            SubTi="With Most License at 98115",
+            Sou="Source: 2015-2019 King County")
+
+
+plot2= ZipMap + labs(title = Titles$Title,
                     subtitle = Titles$SubTi,
                     caption = Titles$Sou)
 
@@ -261,6 +271,7 @@ MapChart = bartext + theme(
   plot.title = element_text(hjust = 0.5),
   plot.subtitle = element_text(hjust = 0.5)
 )
+
 MapChart
 ```
-
+Hnin's Map Plot Ends here
